@@ -47,6 +47,7 @@ output output_last
     reg [7:0]r_output_data;
     reg r_output_valid;
     reg r_output_last;
+    reg r_output_ready;
     
  integer i;
     // mem initiliazation to 0;
@@ -106,13 +107,21 @@ end
    rvalid <= 0;
    rlast <= 0; 
     end
-    else if(input_tvalid && output_ready)
+    else if(input_tvalid && input_tready)
     begin
     rdata <= input_tdata;
     rvalid <= 1;
     rlast <= input_tlast;
     end
     end
+    
+    //registering the output_ready
+    always@(posedge clk)
+    begin
+    if(!reset_n) r_output_ready <= 0;
+    else r_output_ready <= output_ready;
+    end
+    
     
     // data to output
     always@(posedge clk)
@@ -124,7 +133,7 @@ end
     r_output_last <= 0;
     end
     else begin
-         if(r_en && !empty && output_ready) begin
+         if(r_en && !empty && r_output_ready) begin
          r_output_data <= mem[r_ptr];
          r_output_valid <= 1;
          r_output_last <= rlast;
@@ -140,7 +149,7 @@ end
     // data input 
     always@(posedge clk)
     begin
-    if(w_en && !full && output_ready && rvalid) mem[w_ptr] <= rdata;
+    if(w_en && !full && input_tready && rvalid) mem[w_ptr] <= rdata;
     else mem[w_ptr] <= mem[w_ptr];
     end
     
