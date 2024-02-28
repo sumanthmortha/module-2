@@ -23,10 +23,12 @@
 module axi_reg(
       input clk,
       input reset_n,
+      
       input [7:0]input_tdata,
       input input_tvalid,
       input input_tlast,
       output input_tready,
+      
       output [7:0]output_data,
       output output_valid,
       output output_last,
@@ -36,9 +38,10 @@ module axi_reg(
     reg [7:0]r_output_data;
     reg r_output_valid;
     reg r_output_last;
+    
     reg [7:0]r_input_tdata;
-    reg r_input_tvalid;
     reg r_input_tlast;
+    reg r_output_ready;
     
     
     assign input_tready = output_ready;
@@ -54,18 +57,22 @@ module axi_reg(
     if(!reset_n)
     begin
     r_input_tdata<=0;
-    r_input_tvalid<=0;
     r_input_tlast<=0;
     end
-    else if(input_tvalid)
+    else if(input_tvalid && input_tready)
     begin
     r_input_tdata <= input_tdata;
     r_input_tlast <= input_tlast;
-    r_input_tvalid <=1;
     end
-    else r_input_tvalid <= 0;
+    else begin 
+    end
    end
    
+   always@(posedge clk)
+   begin
+   if(!reset_n) r_output_ready <=0;
+   else r_output_ready <= output_ready;
+   end
     // output ports
     always@(posedge clk)
     begin
@@ -73,9 +80,9 @@ module axi_reg(
     begin
     r_output_data <= 0;
     r_output_last <= 0;
-    r_output_valid <= 1;
+    r_output_valid <= 0;
     end
-    else if(output_ready && r_input_tvalid)
+    else if(r_output_ready)
     begin
     r_output_data <= r_input_tdata;
     r_output_valid <= 1;
@@ -87,5 +94,6 @@ module axi_reg(
      r_output_last <= r_output_last;
      end
     end
+    
     
 endmodule
