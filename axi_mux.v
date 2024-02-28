@@ -23,9 +23,7 @@
 module axi_mux(
 input clk,
 input reset_n,
-input sel_tdata,
-output sel_tready,
-input sel_tvalid,
+input sel,
 input [7:0]input_tdata_0,
 input input_tvalid_0,
 output input_tready_0,
@@ -44,34 +42,18 @@ input output_ready
     reg [7:0]rdata;
     reg rvalid;
     reg rlast;
-    reg rseldata;
-    reg rselvalid;
     reg [7:0]r_output_data;
     reg r_output_valid;
     reg r_output_last;
+    reg r_output_ready;
     
     // assignment
-    assign sel_tready = (!reset_n) ? 0 : 1;
-    assign input_tready_0 = sel_tready;
-    assign input_tready_1 = sel_tready;
+    assign input_tready_0 = output_ready;
+    assign input_tready_1 = output_ready;
     assign output_data = r_output_data;
     assign output_valid = r_output_valid;
     assign output_last = r_output_last;
     
-    //select line
-    always@(posedge clk)
-    begin
-    if(!reset_n)
-    begin
-    rseldata <= 0;
-    rselvalid <= 0;
-    end
-    else if (sel_tvalid)
-    begin
-    rseldata <= sel_tdata;
-    rselvalid <= 1;
-    end
-    end
     
     //input port
    always@(posedge clk)
@@ -83,13 +65,13 @@ input output_ready
    end
    else   
    begin
-           if (rseldata && input_tvalid_1 && sel_tready)    
+           if (sel && input_tvalid_1 && input_tready_1)    
            begin
            rdata <= input_tdata_1;
            rlast <= input_tlast_1;
            rvalid <= 1;
            end
-           else if(input_tvalid_0 && sel_tready)
+           else if(!sel && input_tvalid_0 && input_tready_0)
            begin
            rdata <= input_tdata_0;
            rlast <= input_tlast_0;
@@ -104,6 +86,11 @@ input output_ready
    end
    
    //output port
+   always@(posedge clk)
+   begin
+   if(!reset_n) r_output_ready <= 0;
+   else r_output_ready <= output_ready;
+   end
    
    always@(posedge clk)
    begin
@@ -112,7 +99,7 @@ input output_ready
    r_output_last <= 0;
    r_output_valid <= 0;
    end
-   else if(output_ready && rvalid)
+   else if(r_output_ready)
    begin
    r_output_data <= rdata;
    r_output_last <= rlast;
