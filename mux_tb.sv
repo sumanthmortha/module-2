@@ -27,8 +27,7 @@ module mux_tb( );// Define parameters
   // Define signals
   reg clk;
   reg reset_n;
-  reg sel_tdata;
-  reg sel_tvalid;
+  reg sel;
   reg [7:0] input_tdata_0;
   reg input_tvalid_0;
   reg input_tlast_0;
@@ -38,7 +37,6 @@ module mux_tb( );// Define parameters
   wire input_tready_0;
   wire input_tready_1;
   reg output_ready;
-  wire sel_tready;
   wire [7:0] output_data;
   wire output_valid;
   wire output_last;
@@ -47,9 +45,7 @@ module mux_tb( );// Define parameters
   axi_mux mux_inst (
     .clk(clk),
     .reset_n(reset_n),
-    .sel_tdata(sel_tdata),
-    .sel_tready(sel_tready),
-    .sel_tvalid(sel_tvalid),
+    .sel(sel),
     .input_tdata_0(input_tdata_0),
     .input_tvalid_0(input_tvalid_0),
     .input_tready_0(input_tready_0),
@@ -68,8 +64,6 @@ module mux_tb( );// Define parameters
   initial begin
     clk = 0;
     reset_n = 0;
-    sel_tdata = 0;
-    sel_tvalid = 0;
     input_tdata_0 = 0;
     input_tvalid_0 = 0;
     input_tlast_0 = 0;
@@ -110,15 +104,14 @@ module mux_tb( );// Define parameters
       reset_n = 1;
       
       // Select input stream 0
-      sel_tdata = 0;
-      sel_tvalid = 1;
+      sel = 0;
       #20;
       
       // Verify output data
       assert(output_data == 8'haa) else $error("Test Case 1 failed: Incorrect output data for input stream 0");
       
       // Select input stream 1
-      sel_tdata = 1;
+      sel = 1;
       #30;
       
       // Verify output data
@@ -156,7 +149,7 @@ module mux_tb( );// Define parameters
       input_tdata_0 = 8'hAA;
       input_tvalid_0 = 1;
       input_tlast_0 = 0;
-      sel_tdata = 0;
+      sel = 0;
       output_ready = 1;
       #30;
       input_tlast_0 = 1; // Assert last signal
@@ -195,7 +188,7 @@ module mux_tb( );// Define parameters
       input_tdata_1 = 8'h55;
       input_tvalid_1 = 1;
       input_tlast_1 = 0;
-      sel_tdata = 1;
+      sel = 1;
       
       // Assert output ready signal intermittently
       output_ready = 1;
