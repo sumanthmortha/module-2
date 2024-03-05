@@ -42,6 +42,7 @@ output output_last
     reg [11:0]r_ptr;
     reg [11:0]count;
     reg [7:0]mem[2047:0];
+    reg [7:0]mem_last[2047:0];
     reg empty = 1;
     reg full = 0;
     reg [7:0]r_output_data;
@@ -55,6 +56,7 @@ output output_last
     // Initialize mem to all zeros
     for (i = 0; i < 2048; i = i + 1) begin
         mem[i] = 8'h00; // 8'h00 represents an 8-bit value of all zeros
+        mem_last[i] = 8'h00;
     end
 end
     //assigning operator
@@ -136,11 +138,11 @@ end
          if(r_en && !empty && r_output_ready) begin
          r_output_data <= mem[r_ptr];
          r_output_valid <= 1;
-         r_output_last <= rlast;
+         r_output_last <= mem_last[r_ptr];
          end
          else begin
          r_output_data <= output_data;
-         r_output_valid <= 0;
+         r_output_valid <= r_output_valid;
          r_output_last <= output_last;
          end
     end
@@ -152,6 +154,13 @@ end
     if(w_en && !full && input_tready && rvalid) mem[w_ptr] <= rdata;
     else mem[w_ptr] <= mem[w_ptr];
     end
+     // tlast mem
+    always@(posedge clk)
+    begin
+    if(w_en && !full && input_tready && rvalid) mem_last[w_ptr] <= rlast;
+    else mem_last[w_ptr] <= 0;
+    end
+    
     
 endmodule
 
