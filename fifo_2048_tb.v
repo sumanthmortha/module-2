@@ -86,10 +86,18 @@ output_ready = 0;
 reset_task();
 repeat(2)@(posedge clk);
 
-repeat(2049) begin
-fifo_write();
+
+repeat(128) begin
+    repeat(16) begin
+    fifo_write();
+    input_tlast = 0;
+    end
+    @(posedge clk);
+input_tlast = 1;
 end
 @(posedge clk);
+
+input_tlast = 0;
 repeat(10)@(posedge clk);
 
 repeat (30) begin
