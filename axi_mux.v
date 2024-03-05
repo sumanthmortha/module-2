@@ -105,7 +105,11 @@ input output_ready
    r_output_last <= rlast;
    r_output_valid <= 1;
    end
-   else r_output_valid <= 0;
+   else begin
+    r_output_valid <= r_output_valid;
+    r_output_data <= r_output_data;
+    r_output_last <= r_output_last;
+    end
    end
    
    
