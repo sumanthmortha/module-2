@@ -89,7 +89,7 @@ module axi_reg(
     r_output_last <= r_input_tlast;
     end
     else begin
-     r_output_valid <= 0;
+     r_output_valid <= r_output_valid;
      r_output_data <= r_output_data ;
      r_output_last <= r_output_last;
      end
